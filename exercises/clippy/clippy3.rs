@@ -7,8 +7,8 @@
 #[allow(unused_variables, unused_assignments)]
 fn main() {
     let my_option: Option<()> = None;
-    if my_option.is_none() {
-        panic!("This option is none!");
+    if my_option.is_some() {
+        todo!("This should not be a todo, fix it!");
     }
 
     let my_arr = &[

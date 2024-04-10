@@ -35,7 +35,24 @@ impl<T: PartialOrd> Default for LinkedList<T> {
     }
 }
 
-impl<T: std::cmp::PartialOrd> LinkedList<T> {
+impl<T> Node<T> {
+    unsafe fn val(&self) -> Option<T> {
+        let ptr = self.val.as_ptr();
+        Some(std::mem::transmute(*ptr))
+    }
+
+    unsafe fn next(&self) -> Option<Node<T>> {
+        match self.next {
+            Some(next) => {
+                let ptr = next.as_ptr();
+                Some(std::mem::transmute((*ptr)))
+            },
+            None => None,
+        }
+    }
+}
+
+impl<T: std::cmp::PartialOrd + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,20 +86,21 @@ impl<T: std::cmp::PartialOrd> LinkedList<T> {
             },
         }
     }
+
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
         let mut list_c = LinkedList::<T>::new();
         let mut node_a = list_a.start;
         let mut node_b = list_b.start;
-        while node_a.is_some() && node_b.is_some() {
-            let val_a = unsafe { node_a.unwrap().as_ref().val };
-            let val_b = unsafe { node_b.unwrap().as_ref().val };
+        while node_a.is_some() || node_b.is_some() {
+            let val_a = unsafe { (*node_a.unwrap().as_ptr()).val };
+            let val_b = unsafe { (*node_b.unwrap().as_ptr()).val };
             if val_a < val_b {
                 list_c.add(val_a);
-                node_a = unsafe { node_a.unwrap().as_ref().next };
+                node_a = unsafe { (*node_a.unwrap().as_ptr()).next };
             } else {
                 list_c.add(val_b);
-                node_b = unsafe { node_b.unwrap().as_ref().next };
+                node_b = unsafe { (*node_b.unwrap().as_ptr()).next };
             }
         }
         
