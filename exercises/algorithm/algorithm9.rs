@@ -58,7 +58,7 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		4
     }
 }
 
