@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -23,32 +22,15 @@ impl<T> Node<T> {
     }
 }
 #[derive(Debug)]
-struct LinkedList<T: PartialOrd> {
+struct LinkedList<T: PartialOrd + Clone> {
     length: u32,
     start: Option<NonNull<Node<T>>>,
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T: PartialOrd> Default for LinkedList<T> {
+impl<T: PartialOrd + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-impl<T> Node<T> {
-    unsafe fn val(&self) -> Option<T> {
-        let ptr = self.val.as_ptr();
-        Some(std::mem::transmute(*ptr))
-    }
-
-    unsafe fn next(&self) -> Option<Node<T>> {
-        match self.next {
-            Some(next) => {
-                let ptr = next.as_ptr();
-                Some(std::mem::transmute((*ptr)))
-            },
-            None => None,
-        }
     }
 }
 
@@ -93,14 +75,29 @@ impl<T: std::cmp::PartialOrd + Clone> LinkedList<T> {
         let mut node_a = list_a.start;
         let mut node_b = list_b.start;
         while node_a.is_some() || node_b.is_some() {
-            let val_a = unsafe { (*node_a.unwrap().as_ptr()).val };
-            let val_b = unsafe { (*node_b.unwrap().as_ptr()).val };
-            if val_a < val_b {
-                list_c.add(val_a);
-                node_a = unsafe { (*node_a.unwrap().as_ptr()).next };
-            } else {
-                list_c.add(val_b);
-                node_b = unsafe { (*node_b.unwrap().as_ptr()).next };
+            match (node_a, node_b) {
+                (None, None) => break,
+                (Some(node_a_inner), None) => {
+                    let val_a = unsafe { (*node_a_inner.as_ptr()).val.clone() };
+                    list_c.add(val_a);
+                    node_a = unsafe { (*node_a_inner.as_ptr()).next };
+                }
+                (None, Some(node_b_inner)) => {
+                    let val_b = unsafe { (*node_b_inner.as_ptr()).val.clone() };
+                    list_c.add(val_b);
+                    node_b = unsafe { (*node_b_inner.as_ptr()).next };
+                }
+                (Some(node_a_inner), Some(node_b_inner)) => {
+                    let val_a = unsafe { (*node_a_inner.as_ptr()).val.clone() };
+                    let val_b = unsafe { (*node_b_inner.as_ptr()).val.clone() };
+                    if val_a < val_b {
+                        list_c.add(val_a);
+                        node_a = unsafe { (*node_a_inner.as_ptr()).next };
+                    } else {
+                        list_c.add(val_b);
+                        node_b = unsafe { (*node_b_inner.as_ptr()).next };
+                    }
+                }
             }
         }
         
@@ -110,7 +107,7 @@ impl<T: std::cmp::PartialOrd + Clone> LinkedList<T> {
 
 impl<T> Display for LinkedList<T>
 where
-    T: Display + PartialOrd,
+    T: Display + PartialOrd + Clone,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.start {
@@ -122,7 +119,7 @@ where
 
 impl<T> Display for Node<T>
 where
-    T: Display + PartialOrd,
+    T: Display + PartialOrd + Clone,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.next {

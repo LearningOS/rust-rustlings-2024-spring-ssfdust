@@ -2,7 +2,6 @@
 	double linked list reverse
 	This problem requires you to reverse a doubly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -25,19 +24,19 @@ impl<T> Node<T> {
     }
 }
 #[derive(Debug)]
-struct LinkedList<T> {
+struct LinkedList<T: Clone> {
     length: u32,
     start: Option<NonNull<Node<T>>>,
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -72,14 +71,25 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn reverse(&mut self){
-		// TODO
+
+	pub fn reverse(&mut self) {
+        let mut linked_list = Self::new();
+        let max_idx = self.length - 1;
+        let first_node = self.get_ith_node(self.start, 0).unwrap().clone();
+        for i in 0..(self.length - 1) {
+            let mut node = self.get_ith_node(self.start, (max_idx - i) as i32);
+            linked_list.add((*node.unwrap()).clone());
+        }
+        linked_list.add(first_node);
+        self.start = linked_list.start;
+        self.end = linked_list.end;
+        self.length = linked_list.length;
 	}
 }
 
 impl<T> Display for LinkedList<T>
 where
-    T: Display,
+    T: Display + Clone,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.start {
@@ -91,7 +101,7 @@ where
 
 impl<T> Display for Node<T>
 where
-    T: Display,
+    T: Display + Clone,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self.next {
