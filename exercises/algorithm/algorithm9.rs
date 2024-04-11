@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -36,8 +35,26 @@ where
         self.len() == 0
     }
 
+    fn move_up(&mut self, mut count: usize) {
+        loop {
+            let parent_idx = self.parent_idx(count);
+            if parent_idx <= 0 {
+                break;
+            }
+            if (self.comparator)(&self.items[count], &self.items[parent_idx]) {
+                self.items.swap(count, parent_idx);
+                count = parent_idx;
+            } else {
+                break;
+            }
+        }
+    }
+
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.move_up(self.count);
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +74,45 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		4
+        let (left, right) = (self.left_child_idx(idx), self.right_child_idx(idx));
+        if right > self.count {
+            left
+        } else if (self.comparator)(&self.items[left], &self.items[right]) {
+            left
+        } else {
+            right
+        }
+    }
+
+    fn move_down(&mut self, mut count: usize) {
+        loop {
+            let left_child_idx = self.left_child_idx(count);
+            if left_child_idx > self.count {
+                break;
+            }
+            let smallest_child_idx = self.smallest_child_idx(count);
+            if (self.comparator)(&self.items[smallest_child_idx], &self.items[count]) {
+                self.items.swap(count, smallest_child_idx);
+                count = smallest_child_idx;
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        if self.is_empty() {
+            return None;
+        } else if self.len() == 1 {
+            self.count = 0;
+            return self.items.pop();
+        } else {
+            self.items.swap(1, self.count);
+            let value = self.items.pop();
+            self.count -= 1;
+            self.move_down(1);
+            return value;
+        }
     }
 }
 
@@ -84,8 +138,7 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        self.pop()
     }
 }
 
